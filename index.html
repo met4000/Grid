@@ -14,11 +14,16 @@
       td {
         width: 10px;
         height: 10px;
+
+        --rgb: black;
+        background-color: var(--rgb);
       }
 
-      .filled   { background-color: orange; }
-      .empty    { background-color: white; }
-      .blocked  { background-color: red; }
+      .filled   { --rgb: orange; }
+      .empty    { --rgb: white; }
+      .blocked  { --rgb: red; }
+      
+      .highlighted { filter: brightness(0.8) }
 
       .bottom_centre {
         font-size: small;
@@ -42,7 +47,7 @@
       <br><br><br><br>
     </center>
     <div class="bottom_centre">
-      <b>CONTROLS:</b> Left: toggle, Right: manual, Middle: block, R: <button onclick="wipeTable()">clear board</button>
+      <b>CONTROLS:</b> DoubleClick: Highlight, Left: toggle, Right: manual, Middle: block, R: <button onclick="wipeTable()">clear board</button>
     </div>
     <script src="main.js"></script>
   </body>

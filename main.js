@@ -11,43 +11,61 @@ var getClickTypeFromEvent = function (e) {
   return undefined;
 };
 
-var rowInput  = document.getElementById("rowInput");
-var colInput  = document.getElementById("colInput");
-var table     = document.getElementById("table");
-
 var TableElemType = {
   FILLED:   { name: "filled", getInverse: {}, getBlocked: {} },
   EMPTY:    { name: "empty", getInverse: {}, getBlocked: {} },
   BLOCKED:  { name: "blocked", getInverse: {}, getBlocked: {} },
 };
+const HighlightedClassname = "highlighted";
+
 TableElemType.FILLED.getInverse  = TableElemType.EMPTY;
 TableElemType.EMPTY.getInverse   = TableElemType.FILLED;
 TableElemType.BLOCKED.getInverse = TableElemType.BLOCKED;
 TableElemType.FILLED.getBlocked  = TableElemType.BLOCKED;
 TableElemType.EMPTY.getBlocked   = TableElemType.BLOCKED;
 TableElemType.BLOCKED.getBlocked = TableElemType.EMPTY;
+
+var rowInput  = document.getElementById("rowInput");
+var colInput  = document.getElementById("colInput");
+var table     = document.getElementById("table");
+
 var _table = [];
 var _r = () => _table.length, _c = () => (_table[0] || []).length;
 
 var changeTableSize = function (r, c) {
-  while (_r() < r) _table.push(new Array(_c()).fill(TableElemType.EMPTY));
+  while (_r() < r) _table.push(new Array(_c()).fill({ type: TableElemType.EMPTY, highlighted: false }));
   while (_r() > r) _table.pop();
 
-  while (_c() < c) _table.forEach(r => r.push(TableElemType.EMPTY));
+  while (_c() < c) _table.forEach(r => r.push({ type: TableElemType.EMPTY, highlighted: false }));
   while (_c() > c) _table.forEach(r => r.pop());
 };
 
 var updateDisplayTable = function () {
-  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => `<td class="${v.name}" id="[${[_r,_c]}]"></td>`).join("")}</tr>`).join("");
+  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => {
+    var classList = [v.type.name];
+    if (v.highlighted) classList.push(HighlightedClassname);
+    return `<td class="${classList.join(" ")}" id="[${[_r,_c]}]"></td>`;
+  }).join("")}</tr>`).join("");
+
   Array(...table.getElementsByTagName("td")).forEach(v => {
     v.onclick = (...args) => clickevent(getClickTypeFromEvent(...args), ...args);
     v.onauxclick = (...args) => clickevent(getClickTypeFromEvent(...args), ...args);
     v.oncontextmenu = () => false;
+
+    v.ondblclick = (...args) => toggleHighlight(...args);
   });
 };
 
+var getCoordsFromElement = function (el) { return JSON.parse(el.id); };
+
+var toggleHighlight = function (e) {
+  var [r, c] = getCoordsFromElement(e.srcElement);
+  _table[r][c].highlighted = !_table[r][c].highlighted;
+  updateDisplayTable();
+};
+
 var clickevent = function (clickType, e) {
-  var coords = JSON.parse(e.srcElement.id);
+  var coords = getCoordsFromElement(e.srcElement);
   
   switch (clickType) {
     case ClickType.LEFT:
@@ -70,7 +88,7 @@ var clickevent = function (clickType, e) {
 var singleChange = function (r, c) {
   if (0 <= r && r < _table.length) {
     if (0 <= c && c < _table[r].length) {
-      _table[r][c] = _table[r][c].getInverse;
+      _table[r][c].type = _table[r][c].type.getInverse;
     }
   }
 };
@@ -86,7 +104,7 @@ var localChange = function (r, c) {
 var block = function (r, c) {
   if (0 <= r && r < _table.length) {
     if (0 <= c && c < _table[r].length) {
-      _table[r][c] = _table[r][c].getBlocked;
+      _table[r][c].type = _table[r][c].type.getBlocked;
     }
   }
 };
