@@ -33,19 +33,15 @@ var _table = [];
 var _r = () => _table.length, _c = () => (_table[0] || []).length;
 
 var changeTableSize = function (r, c) {
-  while (_r() < r) _table.push(new Array(_c()).fill({ type: TableElemType.EMPTY, highlighted: false }));
+  while (_r() < r) _table.push(new Array(_c()).fill({ type: TableElemType.EMPTY, classes: [] }));
   while (_r() > r) _table.pop();
 
-  while (_c() < c) _table.forEach(r => r.push({ type: TableElemType.EMPTY, highlighted: false }));
+  while (_c() < c) _table.forEach(r => r.push({ type: TableElemType.EMPTY, classes: [] }));
   while (_c() > c) _table.forEach(r => r.pop());
 };
 
 var updateDisplayTable = function () {
-  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => {
-    var classList = [v.type.name];
-    if (v.highlighted) classList.push(HighlightedClassname);
-    return `<td class="${classList.join(" ")}" id="[${[_r,_c]}]"></td>`;
-  }).join("")}</tr>`).join("");
+  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => `<td class="${[v.type.name, ...v.classes].join(" ")}" id="[${[_r,_c]}]"></td>`).join("")}</tr>`).join("");
 
   Array(...table.getElementsByTagName("td")).forEach(v => {
     v.onclick = (...args) => clickevent(getClickTypeFromEvent(...args), ...args);
@@ -58,9 +54,27 @@ var updateDisplayTable = function () {
 
 var getCoordsFromElement = function (el) { return JSON.parse(el.id); };
 
+var toggleClass = function (classname, r, c) {
+  if (0 <= r && r < _table.length) {
+    if (0 <= c && c < _table[r].length) {
+      var i = _table[r][c].classes.indexOf(classname);
+      if (i > -1) {
+        _table[r][c].classes.splice(i, 1);
+      } else {
+        _table[r][c].classes.push(classname);
+      }
+    }
+  }
+};
+
 var toggleHighlight = function (e) {
   var [r, c] = getCoordsFromElement(e.srcElement);
-  _table[r][c].highlighted = !_table[r][c].highlighted;
+  toggleClass(HighlightedClassname, r, c);
+  updateDisplayTable();
+};
+
+var toggleLargeCells = function () {
+  _table.forEach((r, _r) => r.forEach((v, _c) => toggleClass("large", _r, _c)));
   updateDisplayTable();
 };
 
