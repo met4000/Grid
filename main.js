@@ -48,6 +48,16 @@ var sizeUpdate = function () {
   updateDisplayTable();
 };
 
+
+window.onkeypress = function (e) {
+  if (e.code == "KeyR") wipeTable();
+};
+
+var wipeTable = function () {
+  _table.forEach(r => r.forEach((_, i, a) => a[i] = false));
+  updateDisplayTable();
+};
+
 // html setup
 [rowInput, colInput].forEach(v => v.addEventListener("change", sizeUpdate));
 sizeUpdate();
