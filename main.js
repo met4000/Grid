@@ -29,7 +29,7 @@ var rowInput  = document.getElementById("rowInput");
 var colInput  = document.getElementById("colInput");
 var table     = document.getElementById("table");
 
-var _table = [];
+var _table = [], _classlist = [];
 var _r = () => _table.length, _c = () => (_table[0] || []).length;
 
 var changeTableSize = function (r, c) {
@@ -41,7 +41,7 @@ var changeTableSize = function (r, c) {
 };
 
 var updateDisplayTable = function () {
-  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => `<td class="${[v.type.name, ...v.classes].join(" ")}" id="[${[_r,_c]}]"></td>`).join("")}</tr>`).join("");
+  table.innerHTML = _table.map((r, _r) => `<tr>${r.map((v, _c) => `<td class="${[v.type.name, ..._classlist, ...v.classes].join(" ")}" id="[${[_r,_c]}]"></td>`).join("")}</tr>`).join("");
 
   Array(...table.getElementsByTagName("td")).forEach(v => {
     v.onclick = (...args) => clickevent(getClickTypeFromEvent(...args), ...args);
@@ -54,16 +54,23 @@ var updateDisplayTable = function () {
 
 var getCoordsFromElement = function (el) { return JSON.parse(el.id); };
 
-var toggleClass = function (classname, r, c) {
-  if (0 <= r && r < _table.length) {
-    if (0 <= c && c < _table[r].length) {
-      var i = _table[r][c].classes.indexOf(classname);
-      if (i > -1) {
-        _table[r][c].classes.splice(i, 1);
-      } else {
-        _table[r][c].classes.push(classname);
-      }
-    }
+var toggleClass = function (classname, r = undefined, c = undefined) {
+  var table;
+
+  if (r !== undefined && c !== undefined) {
+    if (!(0 <= r && r < _table.length)) return;
+    if (!(0 <= c && c < _table[r].length)) return;
+
+    table = _table[r][c].classes;
+  } else {
+    table = _classlist;
+  }
+
+  var i = table.indexOf(classname);
+  if (i > -1) {
+    table.splice(i, 1);
+  } else {
+    table.push(classname);
   }
 };
 
@@ -74,7 +81,7 @@ var toggleHighlight = function (e) {
 };
 
 var toggleLargeCells = function () {
-  _table.forEach((r, _r) => r.forEach((v, _c) => toggleClass("large", _r, _c)));
+  toggleClass("large");
   updateDisplayTable();
 };
 
@@ -100,11 +107,10 @@ var clickevent = function (clickType, e) {
 };
 
 var singleChange = function (r, c) {
-  if (0 <= r && r < _table.length) {
-    if (0 <= c && c < _table[r].length) {
-      _table[r][c].type = _table[r][c].type.getInverse;
-    }
-  }
+  if (!(0 <= r && r < _table.length)) return;
+  if (!(0 <= c && c < _table[r].length)) return;
+
+  _table[r][c].type = _table[r][c].type.getInverse;
 };
 
 var localChange = function (r, c) {
@@ -116,11 +122,10 @@ var localChange = function (r, c) {
 };
 
 var block = function (r, c) {
-  if (0 <= r && r < _table.length) {
-    if (0 <= c && c < _table[r].length) {
-      _table[r][c].type = _table[r][c].type.getBlocked;
-    }
-  }
+  if (!(0 <= r && r < _table.length)) return;
+  if (!(0 <= c && c < _table[r].length)) return;
+
+  _table[r][c].type = _table[r][c].type.getBlocked;
 };
 
 var sizeUpdate = function () {
