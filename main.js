@@ -37,7 +37,7 @@ var _r = () => _table.length, _c = () => (_table[0] || []).length;
 var TableElem = function (type = TableElemType.EMPTY) { return { type: type, classes: [] }; };
 
 var changeTableSize = function (r, c) {
-  while (_r() < r) _table.push(new Array(_c()).fill(new TableElem()));
+  while (_r() < r) _table.push(new Array(_c()).fill().map(TableElem));
   while (_r() > r) _table.pop();
 
   while (_c() < c) _table.forEach(r => r.push(new TableElem()));
