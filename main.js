@@ -16,7 +16,10 @@ var TableElemType = {
   EMPTY:    { name: "empty", getInverse: {}, getBlocked: {} },
   BLOCKED:  { name: "blocked", getInverse: {}, getBlocked: {} },
 };
-const HighlightedClassname = "highlighted";
+const Classname = Object.freeze({
+  HIGHLIGHTED: "highlighted",
+  LARGECELLS: "large",
+});
 
 TableElemType.FILLED.getInverse  = TableElemType.EMPTY;
 TableElemType.EMPTY.getInverse   = TableElemType.FILLED;
@@ -31,12 +34,13 @@ var table     = document.getElementById("table");
 
 var _table = [], _classlist = [];
 var _r = () => _table.length, _c = () => (_table[0] || []).length;
+var TableElem = function (type = TableElemType.EMPTY) { return { type: type, classes: [] }; };
 
 var changeTableSize = function (r, c) {
-  while (_r() < r) _table.push(new Array(_c()).fill({ type: TableElemType.EMPTY, classes: [] }));
+  while (_r() < r) _table.push(new Array(_c()).fill(new TableElem()));
   while (_r() > r) _table.pop();
 
-  while (_c() < c) _table.forEach(r => r.push({ type: TableElemType.EMPTY, classes: [] }));
+  while (_c() < c) _table.forEach(r => r.push(new TableElem()));
   while (_c() > c) _table.forEach(r => r.pop());
 };
 
@@ -76,12 +80,12 @@ var toggleClass = function (classname, r = undefined, c = undefined) {
 
 var toggleHighlight = function (e) {
   var [r, c] = getCoordsFromElement(e.srcElement);
-  toggleClass(HighlightedClassname, r, c);
+  toggleClass(Classname.HIGHLIGHTED, r, c);
   updateDisplayTable();
 };
 
 var toggleLargeCells = function () {
-  toggleClass("large");
+  toggleClass(Classname.LARGECELLS);
   updateDisplayTable();
 };
 
@@ -139,7 +143,7 @@ window.onkeypress = function (e) {
 };
 
 var wipeTable = function () {
-  _table.forEach(r => r.forEach((_, i, a) => a[i] = false));
+  _table.forEach(r => r.forEach((_, i, a) => a[i] = new TableElem()));
   updateDisplayTable();
 };
 
